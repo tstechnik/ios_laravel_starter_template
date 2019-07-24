@@ -1,3 +1,6 @@
+<IfModule autoindex>
+	IndexIgnore *
+</IfModule>
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
@@ -5,17 +8,24 @@
 
     RewriteEngine On
 
-    # Handle Authorization Header
-    RewriteCond %{HTTP:Authorization} .
-    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+    <FilesMatch "(?i)(^artisan$|\.env|\.log)">
+        Order deny,allow
+        Deny from all
+    </FilesMatch>
 
-    # Redirect Trailing Slashes If Not A Folder...
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests)/(.*) / [L,R=301]
+    RewriteRule ^(modules)/(.*)\.((?!ico|gif|jpg|jpeg|png|js|css|less|sass|font|woff|woff2|eot|ttf|svg).)*$ / [L,R=301]
+
+    RewriteCond %{REQUEST_URI} ^/?(css|fonts|images|js|uploads|installer|vendor|warden)(/.*)?$ [NC]
+    RewriteRule ^.*$ /public/%1%2%3%4 [L]
+
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} (.+)/$
-    RewriteRule ^ %1 [L,R=301]
+    RewriteRule ^(.*)/$ /$1 [L,R=301]
 
-    # Handle Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 </IfModule>
